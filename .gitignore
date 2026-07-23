@@ -11,11 +11,6 @@ dist/
 .installed.cfg
 *.egg
 .ipynb_checkpoints/
-data/*.csv
-data/*.pkl
-models/*.pkl
-!data/.gitkeep
-!models/.gitkeep
 .vscode/
 .idea/
 *.swp
