@@ -1,69 +1,76 @@
 """
-User Segmentation Logic
-
-Categorizes users into actionable segments based on RFM-style features.
-Order of checks matters: high_value first, then at_risk, new, dormant, fallback.
+Segmentation logic for BenefitIQ.
+Assigns customers to segments based on RFM features and other characteristics.
+Works without requiring data/segments.csv.
 """
 
-
-def assign_segment(features_dict):
-    """
-    Assign user to segment based on features.
-
-    Segments:
-    1. High-Value: Top spenders, frequent users, recently active
-    2. At-Risk: Was active, now going quiet
-    3. New: Recently acquired, still building history
-    4. Dormant: Inactive 90+ days
-    """
-
-    recency = features_dict.get('recency_days', 999)
-    frequency = features_dict.get('frequency', 0)
-    monetary = features_dict.get('monetary', 0)
-    days_as_customer = features_dict.get('days_as_customer', 0)
-
-    if monetary > 80000 and frequency > 40 and recency < 30:
-        return 'high_value'
-
-    elif recency > 60 and frequency > 30:
-        return 'at_risk'
-
-    elif days_as_customer < 90 or frequency < 20:
-        return 'new'
-
-    elif recency > 90:
-        return 'dormant'
-
-    return 'at_risk'
-
-
+# Define segment benefits mapping
 SEGMENT_BENEFITS = {
     'high_value': {
         'primary': ['Travel Insurance', 'Purchase Protection', 'Concierge'],
-        'description': 'Top-tier customer: premium protection + concierge'
+        'description': 'Premium customers with high engagement and spending'
     },
     'at_risk': {
-        'primary': ['Fee Reversal', 'Bonus Acceleration'],
-        'description': 'Re-engage with high-value offers'
+        'primary': ['Fee Reversal', 'Cashback', 'Purchase Protection'],
+        'description': 'Previously active customers showing declining engagement'
     },
     'new': {
-        'primary': ['Welcome Bonus', 'Travel Insurance'],
-        'description': 'New cardholders: onboarding benefits'
+        'primary': ['Cashback', 'Welcome Bonus', 'Purchase Protection'],
+        'description': 'New customers in onboarding phase'
     },
     'dormant': {
-        'primary': ['Reactivation Offer', 'Concierge'],
-        'description': 'Dormant users: compelling re-engagement'
+        'primary': ['Reactivation Offer', 'Cashback', 'Fee Reversal'],
+        'description': 'Inactive customers needing re-engagement'
     }
 }
 
 
-if __name__ == '__main__':
-    test_features = {
-        'recency_days': 15,
-        'frequency': 60,
-        'monetary': 120000,
-        'days_as_customer': 300
-    }
-    segment = assign_segment(test_features)
-    print(f"Test user segment: {segment}")
-    print(f"Recommended benefits: {SEGMENT_BENEFITS[segment]}")
+def assign_segment(customer_features):
+    """
+    Assign a customer to a segment based on RFM and behavioral features.
+    
+    Args:
+        customer_features (dict): Dictionary with keys like:
+            - recency_days: days since last transaction
+            - frequency: number of transactions
+            - monetary: total spending
+            - days_as_customer: tenure
+            
+    Returns:
+        str: segment name ('high_value', 'at_risk', 'new', or 'dormant')
+    """
+    
+    # Extract features with sensible defaults
+    recency = customer_features.get('recency_days', 180)
+    frequency = customer_features.get('frequency', 10)
+    monetary = customer_features.get('monetary', 30000)
+    tenure = customer_features.get('days_as_customer', 365)
+    
+    # NEW CUSTOMERS (tenure < 90 days)
+    if tenure < 90:
+        return 'new'
+    
+    # HIGH VALUE (recent, frequent, high spend)
+    if recency < 30 and frequency >= 20 and monetary >= 50000:
+        return 'high_value'
+    
+    # AT RISK (was active but declining - high tenure but recently inactive)
+    if tenure > 180 and recency > 60 and frequency >= 15:
+        return 'at_risk'
+    
+    # DORMANT (inactive for a long time)
+    if recency > 120 or frequency < 5:
+        return 'dormant'
+    
+    # DEFAULT: treat as at_risk (safer fallback)
+    return 'at_risk'
+
+
+def get_segment_description(segment):
+    """Get human-readable description of a segment."""
+    return SEGMENT_BENEFITS.get(segment, {}).get('description', 'Unknown segment')
+
+
+def get_segment_benefits(segment):
+    """Get primary benefits for a segment."""
+    return SEGMENT_BENEFITS.get(segment, {}).get('primary', ['Purchase Protection'])
