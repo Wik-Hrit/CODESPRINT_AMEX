@@ -1,0 +1,44 @@
+{
+  "travel_insurance": [
+    "You've traveled {trips}x this year. Protect yourself with our travel insurance.",
+    "Flights booked? Activate travel insurance in 2 clicks.",
+    "Travel insurance gives you peace of mind. Learn more.",
+    "Your next trip deserves protection. Activate travel insurance today."
+  ],
+  "purchase_protection": [
+    "Your purchases are protected up to $10K.",
+    "Accidental damage? We cover it. Learn more.",
+    "Peace of mind on every purchase.",
+    "Lost or damaged items? Purchase protection has your back."
+  ],
+  "concierge": [
+    "Your 24/7 concierge is standing by.",
+    "Need restaurant recommendations? Lost luggage help? Call us.",
+    "Premium customer service, just one call away.",
+    "From flight rebooking to dinner reservations, we've got you."
+  ],
+  "fee_reversal": [
+    "Your annual fee can be waived. You're close!",
+    "Spend $5K more this year and we waive your annual fee.",
+    "Annual fee reversal is within reach.",
+    "Just $2K more in spend to reverse your annual fee."
+  ],
+  "bonus_acceleration": [
+    "You're one step away from your next reward tier.",
+    "Boost your points with a limited-time spend bonus.",
+    "Accelerate your rewards - special bonus active this month.",
+    "Hit your spend goal early and earn 2x points."
+  ],
+  "welcome_bonus": [
+    "Welcome aboard! Complete your first purchase to unlock your bonus.",
+    "New here? Your welcome bonus is waiting.",
+    "Activate your card benefits and claim your welcome offer.",
+    "First 90 days matter - here's how to maximize your welcome bonus."
+  ],
+  "reactivation_offer": [
+    "We miss you. Here's an offer to welcome you back.",
+    "It's been a while - here's something special just for you.",
+    "Come back and get a bonus on your next purchase.",
+    "Your card still works wonders. Here's a reason to use it again."
+  ]
+}

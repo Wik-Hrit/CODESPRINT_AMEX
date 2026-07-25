@@ -9,27 +9,30 @@ from segmentation import assign_segment, SEGMENT_BENEFITS
 app = Flask(__name__)
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'models', 'benefit_model.pkl')
+SCALER_PATH = os.path.join(os.path.dirname(__file__), '..', 'models', 'scaler.pkl')
 NUDGES_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'nudges.json')
 
-# The 25 features in the exact order the model expects.
-# Keep this in sync with src/features.py's output columns (minus user_id).
+# The 25 features in the EXACT order Hritwik's scaler/model were trained on
+# (verified against models/scaler.pkl's feature_names_in_). Order matters here -
+# the model sees a plain array, not named columns, so this list must match exactly.
 FEATURE_ORDER = [
     'recency_days', 'frequency', 'monetary', 'category_diversity',
     'monthly_spend_1', 'monthly_spend_2', 'monthly_spend_3', 'monthly_spend_4',
     'monthly_spend_5', 'monthly_spend_6', 'monthly_spend_7', 'monthly_spend_8',
     'monthly_spend_9', 'monthly_spend_10', 'monthly_spend_11', 'monthly_spend_12',
-    'avg_transaction', 'std_transaction', 'max_transaction', 'transaction_trend',
-    'age', 'income_proxy', 'card_type_gold', 'card_type_platinum', 'age_days',
+    'avg_transaction_size', 'std_transaction_size', 'max_transaction', 'transaction_trend',
+    'age', 'income_proxy', 'card_type_platinum', 'card_type_gold', 'days_as_customer',
 ]
 
 model = None
+scaler = None
 nudge_templates = {}
 
 
 def load_model():
-    """Load the trained model if it exists. API still works without it
-    (falls back to a heuristic score) so Anubhav isn't blocked waiting on Hritwik."""
-    global model
+    """Load the trained model + scaler if they exist. API still works without them
+    (falls back to a heuristic score) so nobody's blocked on the other's progress."""
+    global model, scaler
     if os.path.exists(MODEL_PATH):
         with open(MODEL_PATH, 'rb') as f:
             model = pickle.load(f)
@@ -37,6 +40,15 @@ def load_model():
     else:
         model = None
         print(f"No model found at {MODEL_PATH} yet - /predict will use a heuristic score.")
+
+    if os.path.exists(SCALER_PATH):
+        with open(SCALER_PATH, 'rb') as f:
+            scaler = pickle.load(f)
+        print("Scaler loaded from", SCALER_PATH)
+    else:
+        scaler = None
+        if model is not None:
+            print("WARNING: model found but no scaler.pkl - predictions will be unscaled and likely wrong.")
 
 
 def load_nudges():
@@ -107,9 +119,10 @@ def predict():
         user_id = data.get('user_id')
         features = data.get('features', {})
 
-        if model is not None:
-            features_array = [features.get(col, 0) for col in FEATURE_ORDER]
-            pred_proba = float(model.predict_proba([features_array])[0, 1])
+        if model is not None and scaler is not None:
+            features_array = [[features.get(col, 0) for col in FEATURE_ORDER]]
+            scaled = scaler.transform(features_array)
+            pred_proba = float(model.predict_proba(scaled)[0, 1])
         else:
             pred_proba = heuristic_score(features)
 
@@ -165,4 +178,4 @@ load_model()
 load_nudges()
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, use_reloader=False)

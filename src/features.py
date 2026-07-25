@@ -57,8 +57,11 @@ def create_features(master_data):
         features[f'monthly_spend_{month}'] = features['user_id'].map(col).fillna(0).values
 
     # 17-19: Transaction size stats
-    features['avg_transaction'] = user_groups['Amount'].mean().values
-    features['std_transaction'] = user_groups['Amount'].std().fillna(0).values
+    # NOTE: column names here (avg_transaction_size, std_transaction_size,
+    # days_as_customer below) must exactly match models/scaler.pkl's
+    # feature_names_in_ - Hritwik's model was trained on these exact names.
+    features['avg_transaction_size'] = user_groups['Amount'].mean().values
+    features['std_transaction_size'] = user_groups['Amount'].std().fillna(0).values
     features['max_transaction'] = user_groups['Amount'].max().values
 
     # 20: Trend - spend in the later half of the user's history vs the earlier half
@@ -80,9 +83,9 @@ def create_features(master_data):
         on='user_id', how='left'
     )
 
-    # age_days: how long this user's transaction history spans (used by segmentation)
+    # days_as_customer: how long this user's transaction history spans (used by segmentation)
     first_day_per_user = user_groups['day_index'].min()
-    features['age_days'] = (last_day_per_user - first_day_per_user).values
+    features['days_as_customer'] = (last_day_per_user - first_day_per_user).values
 
     features = features.fillna(0)
 

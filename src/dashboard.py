@@ -107,7 +107,7 @@ if submitted:
             "monetary": monetary,
             "age": age,
             "income_proxy": income_proxy,
-            "age_days": 300,
+            "days_as_customer": 300,
             "card_type_gold": 1,
             "card_type_platinum": 0,
         }

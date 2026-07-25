@@ -20,7 +20,7 @@ def assign_segment(features_dict):
     recency = features_dict.get('recency_days', 999)
     frequency = features_dict.get('frequency', 0)
     monetary = features_dict.get('monetary', 0)
-    age_days = features_dict.get('age_days', 0)
+    days_as_customer = features_dict.get('days_as_customer', 0)
 
     if monetary > 80000 and frequency > 40 and recency < 30:
         return 'high_value'
@@ -28,7 +28,7 @@ def assign_segment(features_dict):
     elif recency > 60 and frequency > 30:
         return 'at_risk'
 
-    elif age_days < 90 or frequency < 20:
+    elif days_as_customer < 90 or frequency < 20:
         return 'new'
 
     elif recency > 90:
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         'recency_days': 15,
         'frequency': 60,
         'monetary': 120000,
-        'age_days': 300
+        'days_as_customer': 300
     }
     segment = assign_segment(test_features)
     print(f"Test user segment: {segment}")
